@@ -331,6 +331,28 @@ body.enc-on{padding-bottom:20px}
   </div>
 </div>
 
+<div class="review" id="pixPage" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ppTitle">
+    <h2 id="ppTitle">Pagamento via Pix</h2>
+    <div class="pix">
+      <div class="pixQr" id="ppQr" aria-label="QR Code Pix"></div>
+      <div class="pixInfo">
+        <h3>GROOVE LAB 3D</h3>
+        <span class="pixVal" id="ppVal"></span>
+        <span>Titular: Maria Madalena Saraiva Meireles Ferreira</span>
+        <span>Escaneie o QR Code no app do banco ou use o Pix copia e cola. Depois mande o comprovante no WhatsApp.</span>
+        <code id="ppCode"></code>
+        <button class="btn" id="ppCopy" type="button">Copiar código Pix</button>
+      </div>
+    </div>
+    <div class="actions">
+      <a class="btn zap" id="ppZap" target="_blank" rel="noopener">Enviar comprovante no WhatsApp</a>
+      <button class="btn ghost" id="ppClose" type="button">Ver catálogo</button>
+    </div>
+    <p class="toast" id="ppToast"></p>
+  </div>
+</div>
+
 <div class="review" id="review" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="revTitle">
     <h2 id="revTitle">Seu pedido</h2>
@@ -605,7 +627,8 @@ function mensagem(){
   const nome = $("nome").value.trim();
   const linhas = Object.entries(cart).map(([k,q])=>`• ${q}x ${rotulo(k)} — ${brl(preco(k)*q)}`);
   const total = Object.entries(cart).reduce((s,[k,q])=>s+preco(k)*q,0);
-  return `Olá, GROOVE LAB 3D!${nome?` Sou ${nome}.`:""} Quero fazer este pedido:\n\n${linhas.join("\n")}\n\nTotal: ${brl(total)}`;
+  const pix = (total>0 && typeof pixPayload==="function") ? `\n\n💳 Pagamento via Pix: ${brl(total)}\nQR Code para pagar: ${SITE}/#pix=${total.toFixed(2)}\nPix copia e cola:\n${pixPayload(total)}\n\nAssim que pagar, mando o comprovante aqui.` : "";
+  return `Olá, GROOVE LAB 3D!${nome?` Sou ${nome}.`:""} Quero fazer este pedido:\n\n${linhas.join("\n")}\n\nTotal: ${brl(total)}${pix}`;
 }
 function atualizar(){
   const n = Object.values(cart).reduce((a,b)=>a+b,0);
@@ -648,6 +671,7 @@ $("copy").onclick = ()=>{
   .catch(()=>{ const r=document.createRange(); r.selectNodeContents($("msg")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); $("toast").textContent="Texto selecionado. Copie e cole no WhatsApp."; });
 };
 /* ===== Pix (BR Code estático com valor) ===== */
+const SITE = "https://www.groovelab3d.com";
 const PIX = { chave:"e81cc0c4-5759-48ac-9078-f31448137966", nome:"MARIA MADALENA SARAIVA ME", cidade:"PORTO VELHO" };
 const tlv = (id,v) => id + String(v.length).padStart(2,"0") + v;
 function crc16(str){ let c=0xFFFF; for(const ch of str){ c^=ch.charCodeAt(0)<<8; for(let i=0;i<8;i++) c=(c&0x8000)?((c<<1)^0x1021)&0xFFFF:(c<<1)&0xFFFF; } return c.toString(16).toUpperCase().padStart(4,"0"); }
@@ -657,18 +681,36 @@ function pixPayload(valor){
   return p + crc16(p);
 }
 function totalCarrinho(){ return Object.entries(cart).reduce((s,[k,q])=>s+preco(k)*q,0); }
+function montarPix(valor, qrEl, valEl, codeEl){
+  const code = pixPayload(valor);
+  $(valEl).textContent = brl(valor); $(codeEl).textContent = code;
+  try{ const q=qrcode(0,"M"); q.addData(code); q.make(); $(qrEl).innerHTML=q.createSvgTag({cellSize:4,margin:0,scalable:true}); }catch(e){ $(qrEl).textContent=""; }
+}
 function desenharPix(){
   const t = totalCarrinho();
   $("pix").hidden = !(t>0); if(!(t>0)) return;
-  const code = pixPayload(t);
-  $("pixVal").textContent = brl(t); $("pixCode").textContent = code;
-  try{ const q=qrcode(0,"M"); q.addData(code); q.make(); $("pixQr").innerHTML=q.createSvgTag({cellSize:4,margin:0,scalable:true}); }catch(e){ $("pixQr").textContent=""; }
+  montarPix(t,"pixQr","pixVal","pixCode");
 }
-$("pixCopy").onclick = ()=>{
-  const code = $("pixCode").textContent;
-  navigator.clipboard.writeText(code).then(()=>{$("toast").textContent="Código Pix copiado. Cole no app do seu banco.";})
-  .catch(()=>{ const r=document.createRange(); r.selectNodeContents($("pixCode")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); $("toast").textContent="Código selecionado. Copie e cole no app do banco."; });
-};
+function copiarCodigo(codeId, toastId){
+  const code = $(codeId).textContent;
+  navigator.clipboard.writeText(code).then(()=>{$(toastId).textContent="Código Pix copiado. Cole no app do seu banco.";})
+  .catch(()=>{ const r=document.createRange(); r.selectNodeContents($(codeId)); const s=getSelection(); s.removeAllRanges(); s.addRange(r); $(toastId).textContent="Código selecionado. Copie e cole no app do banco."; });
+}
+function paginaPix(){
+  const m = location.hash.match(/^#pix=(\d+(?:[.,]\d{1,2})?)$/);
+  if(!m){ $("pixPage").hidden=true; return; }
+  const v = Math.round(parseFloat(m[1].replace(",","."))*100)/100;
+  if(!(v>0)){ $("pixPage").hidden=true; return; }
+  montarPix(v,"ppQr","ppVal","ppCode");
+  $("ppZap").href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(`Olá, GROOVE LAB 3D! Segue o comprovante do Pix de ${brl(v)}.`)}`;
+  $("ppToast").textContent=""; $("pixPage").hidden=false;
+}
+$("ppCopy").onclick = ()=>copiarCodigo("ppCode","ppToast");
+$("ppClose").onclick = ()=>{ $("pixPage").hidden=true; history.replaceState(null,"",location.pathname+location.search+"#loja"); };
+$("pixPage").addEventListener("click",e=>{ if(e.target.id==="pixPage") $("ppClose").click(); });
+window.addEventListener("hashchange",paginaPix);
+$("zap").addEventListener("click",()=>{ if($("zap").getAttribute("aria-disabled")==="false"){ setTimeout(()=>{ $("review").hidden=false; $("toast").textContent="Pedido enviado? Pague pelo QR Code abaixo e mande o comprovante no WhatsApp."; },300); } });
+$("pixCopy").onclick = ()=>copiarCodigo("pixCode","toast");
 const _atualizar = atualizar;
 atualizar = function(){ _atualizar(); desenharPix(); };
 $("zapNum").textContent = "+" + WHATSAPP.replace(/^(\d{2})(\d{2})(\d{4,5})(\d{4})$/,"$1 ($2) $3-$4");
@@ -743,7 +785,7 @@ window.addEventListener("hashchange",()=>{ rota(); window.scrollTo(0,0); });
   E("xmasTrack").innerHTML=html+html.replace(/<button /g,'<button tabindex="-1" aria-hidden="true" ');
   E("xmasTrack").addEventListener("click",e=>{const b=e.target.closest(".xmasItem"); if(!b) return; e.stopPropagation(); filtro=b.dataset.x; chips(); lista(); setTimeout(()=>E("chips").scrollIntoView({behavior:"smooth",block:"start"}),20);});
 })();
-rota(); encAtualizar();
+rota(); encAtualizar(); paginaPix();
 </script>
 
 </body>
