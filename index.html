@@ -78,7 +78,7 @@ section h2 small{font:500 12px var(--mono);color:var(--muted);letter-spacing:0;t
 .tabs{display:flex;gap:6px;padding-block:0 4px;overflow-x:auto;scrollbar-width:none}
 .tabsWrap{position:relative}
 .natal .tabsWrap{padding-left:calc(max(16px,env(safe-area-inset-left,0px)) + 66px)}
-.duende{display:none;position:absolute;left:max(10px,env(safe-area-inset-left,0px));bottom:4px;width:66px;height:96px;z-index:4;pointer-events:none;transform-origin:50% 100%;animation:duBob 2.8s ease-in-out infinite}
+.duende{display:none;position:absolute;left:max(10px,env(safe-area-inset-left,0px));bottom:4px;width:66px;height:96px;z-index:4;pointer-events:none;transform-origin:50% 100%;animation:duBob 2.8s ease-in-out infinite;will-change:transform}
 .duende img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45))}
 .duende .d2{opacity:0}
 .duende.joga{animation:none;transform:scale(1.05) rotate(-2deg)}
@@ -941,6 +941,21 @@ E("aFoto").addEventListener("change",()=>{
 E("aFotoX").onclick=()=>E("aFoto").click();
 avRender(); avAtualizar();
 
+/* ===== Sprites de brilho pré-desenhados (desenha o brilho uma vez só; leve para animar) ===== */
+const BRILHO=(()=>{
+  const cache={};
+  function sprite(cor,estrela){
+    const k=cor+estrela; if(cache[k]) return cache[k];
+    const c=document.createElement("canvas"), S=48; c.width=c.height=S; const g=c.getContext("2d"), m=S/2;
+    const rad=g.createRadialGradient(m,m,0,m,m,m); rad.addColorStop(0,cor); rad.addColorStop(.25,cor+"99"); rad.addColorStop(1,cor+"00");
+    g.fillStyle=rad; g.beginPath(); g.arc(m,m,m,0,7); g.fill();
+    if(estrela){ g.fillStyle="#fff"; g.translate(m,m); g.beginPath(); for(let i=0;i<4;i++){ g.rotate(Math.PI/2); g.moveTo(0,0); g.quadraticCurveTo(2.6,2.6,0,m*.95); g.quadraticCurveTo(-2.6,2.6,0,0);} g.fill(); }
+    return cache[k]=c;
+  }
+  return {sprite, desenha(ctx,p,alfa){ const sp=sprite(p.cor,p.st), r=p.r*(p.st?4.2:2.6); ctx.globalAlpha=alfa;
+    if(p.st){ ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.drawImage(sp,-r,-r,r*2,r*2); ctx.restore(); } else ctx.drawImage(sp,p.x-r,p.y-r,r*2,r*2); }};
+})();
+
 /* ===== Duende mágico: ao trocar de aba, lança brilhos que puxam a aba (só roda no clique) ===== */
 (()=>{
   if(!document.documentElement.classList.contains("natal")) return;
@@ -950,7 +965,7 @@ avRender(); avAtualizar();
   const dorme=ms=>new Promise(r=>setTimeout(r,ms));
   function prepara(){
     if(!cv){ cv=document.createElement("canvas"); cv.id="magia"; document.body.appendChild(cv); ctx=cv.getContext("2d"); }
-    const d=Math.min(2,devicePixelRatio||1); cv.width=innerWidth*d; cv.height=innerHeight*d; ctx.setTransform(d,0,0,d,0,0); cv.hidden=false;
+    const d=1; cv.width=innerWidth*d; cv.height=innerHeight*d; ctx.setTransform(d,0,0,d,0,0); cv.hidden=false;
   }
   function estrela(x,y,r,rot){ ctx.save(); ctx.translate(x,y); ctx.rotate(rot); ctx.beginPath();
     for(let k=0;k<4;k++){ ctx.rotate(Math.PI/2); ctx.moveTo(0,0); ctx.quadraticCurveTo(r*.16,r*.16,0,r); ctx.quadraticCurveTo(-r*.16,r*.16,0,0); }
@@ -964,15 +979,14 @@ avRender(); avAtualizar();
     parts=parts.filter(p=>(p.vida+=dt)<p.max);
     for(const p of parts){ p.x+=p.vx*dt/16; p.y+=p.vy*dt/16; p.vy+=.02*dt/16; p.vx*=.985; p.rot+=p.vr;
       const f=p.vida/p.max, a=f<.15?f/.15:1-(f-.15)/.85;
-      ctx.globalAlpha=Math.max(0,a)*(.75+.25*Math.sin(p.vida/45+p.rot*3)); ctx.fillStyle=p.cor; ctx.shadowColor=p.cor; ctx.shadowBlur=8;
-      if(p.st) estrela(p.x,p.y,p.r*2.2,p.rot); else { ctx.beginPath(); ctx.arc(p.x,p.y,p.r*.55,0,7); ctx.fill(); } }
-    ctx.globalAlpha=1; ctx.shadowBlur=0; ctx.globalCompositeOperation="source-over";
+      BRILHO.desenha(ctx,p,Math.max(0,a)*(.75+.25*Math.sin(p.vida/45+p.rot*3))); }
+    ctx.globalAlpha=1; ctx.globalCompositeOperation="source-over";
     if(parts.length) requestAnimationFrame(tick); else { rodando=false; ult=0; ctx.clearRect(0,0,innerWidth,innerHeight); cv.hidden=true; }
   }
   function voo(x0,y0,cx,cy,x1,y1,ms){ return new Promise(res=>{ const t0=performance.now();
     (function passo(t){ const k=Math.min(1,(t-t0)/ms), e=1-(1-k)*(1-k), u=1-e;
       const x=u*u*x0+2*u*e*cx+e*e*x1, y=u*u*y0+2*u*e*cy+e*e*y1;
-      solta(x,y,1.1,3); parts.push({x,y,vx:0,vy:0,vida:0,max:240,r:5.5,cor:"#fff",rot:t/80,vr:.3,st:true});
+      solta(x,y,1.1,2); parts.push({x,y,vx:0,vy:0,vida:0,max:240,r:4,cor:"#ffffff",rot:t/80,vr:.3,st:true});
       if(k<1) requestAnimationFrame(passo); else res(); })(t0); }); }
   document.querySelectorAll(".tabs .tab").forEach(tab=>tab.addEventListener("click",async ev=>{
     const alvo=tab.getAttribute("href");
@@ -997,7 +1011,7 @@ avRender(); avAtualizar();
   const CORES=["#fff7d1","#ffd86b","#ffffff","#ffe9a8","#a8d4ff"];
   let parts=[], visivel=true, voando=false, W=0, H=0;
   new IntersectionObserver(es=>{ visivel=es[0].isIntersecting; }).observe(hero);
-  function mede(){ const d=Math.min(2,devicePixelRatio||1); W=hero.clientWidth; H=hero.clientHeight; cv.width=W*d; cv.height=H*d; ctx.setTransform(d,0,0,d,0,0); }
+  function mede(){ const d=1; W=hero.clientWidth; H=hero.clientHeight; cv.width=W*d; cv.height=H*d; ctx.setTransform(d,0,0,d,0,0); }
   function estrela(x,y,r,rot){ ctx.save(); ctx.translate(x,y); ctx.rotate(rot); ctx.beginPath();
     for(let k=0;k<4;k++){ ctx.rotate(Math.PI/2); ctx.moveTo(0,0); ctx.quadraticCurveTo(r*.16,r*.16,0,r); ctx.quadraticCurveTo(-r*.16,r*.16,0,0); }
     ctx.fill(); ctx.restore(); }
@@ -1019,15 +1033,14 @@ avRender(); avAtualizar();
         voo.style.transform=`translate3d(${x}px,${y}px,0) rotate(${ang}rad)`;
         // magia saindo de trás do trenó
         const ex=x+iw*0.08, ey=y+ih*0.72;
-        for(let n=0;n<3;n++) parts.push({x:ex+Math.random()*10,y:ey+(Math.random()-.5)*12,vx:-(0.3+Math.random()*0.8),vy:(Math.random()-.4)*0.5,vida:0,max:700+Math.random()*900,r:1.5+Math.random()*3.5,cor:CORES[Math.random()*5|0],rot:Math.random()*6,vr:(Math.random()-.5)*.15,st:Math.random()<.5});
+        if(Math.random()<.7) parts.push({x:ex+Math.random()*10,y:ey+(Math.random()-.5)*12,vx:-(0.3+Math.random()*0.8),vy:(Math.random()-.4)*0.5,vida:0,max:600+Math.random()*700,r:1.5+Math.random()*3,cor:CORES[Math.random()*5|0],rot:Math.random()*6,vr:(Math.random()-.5)*.15,st:Math.random()<.5});
       } else if(voando){ voando=false; voo.style.opacity="0"; }
       ctx.clearRect(0,0,W,H); ctx.globalCompositeOperation="lighter";
       parts=parts.filter(p=>(p.vida+=dt)<p.max);
       for(const p of parts){ p.x+=p.vx*dt/16; p.y+=p.vy*dt/16; p.vy+=.006*dt/16; p.rot+=p.vr;
         const f=p.vida/p.max, a=f<.12?f/.12:1-(f-.12)/.88;
-        ctx.globalAlpha=Math.max(0,a)*(.7+.3*Math.sin(p.vida/50+p.rot*3)); ctx.fillStyle=p.cor; ctx.shadowColor=p.cor; ctx.shadowBlur=7;
-        if(p.st) estrela(p.x,p.y,p.r*2.1,p.rot); else { ctx.beginPath(); ctx.arc(p.x,p.y,p.r*.5,0,7); ctx.fill(); } }
-      ctx.globalAlpha=1; ctx.shadowBlur=0; ctx.globalCompositeOperation="source-over";
+        BRILHO.desenha(ctx,p,Math.max(0,a)*(.7+.3*Math.sin(p.vida/50+p.rot*3))); }
+      ctx.globalAlpha=1; ctx.globalCompositeOperation="source-over";
       if(voando||parts.length) requestAnimationFrame(quadro); else { ctx.clearRect(0,0,W,H); setTimeout(voar,7000); }
     })(t0);
   }
