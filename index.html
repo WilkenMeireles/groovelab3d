@@ -113,8 +113,24 @@ section h2 small{font:500 12px var(--mono);color:var(--muted);letter-spacing:0;t
 .encPrev{margin-top:8px}
 .encPrev summary{cursor:pointer;color:var(--muted);font-size:13px}
 .encPrev pre{white-space:pre-wrap;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;font:500 13px/1.6 var(--mono);margin:10px 0 0}
-#eZap[aria-disabled="true"]{pointer-events:auto;cursor:pointer}
+#eZap[aria-disabled="true"],#aZap[aria-disabled="true"]{pointer-events:auto;cursor:pointer}
 body.enc-on{padding-bottom:20px}
+.stars{display:flex;gap:4px}
+.stars label{cursor:pointer}
+.stars input{position:absolute;opacity:0;pointer-events:none}
+.stars span{font-size:30px;line-height:1;color:var(--line);transition:color .1s}
+.stars.v1 label:nth-child(-n+1) span,.stars.v2 label:nth-child(-n+2) span,.stars.v3 label:nth-child(-n+3) span,.stars.v4 label:nth-child(-n+4) span,.stars.v5 label:nth-child(-n+5) span{color:#ffc83d}
+.stars input:focus-visible+span{outline:2px solid var(--blue);outline-offset:2px;border-radius:4px}
+.chk{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--muted);cursor:pointer}
+.chk input{margin-top:3px;accent-color:var(--blue)}
+.avList{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin:0 0 18px}
+.avCard{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.avCard img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:8px;cursor:zoom-in}
+.avCard .st{color:#ffc83d;letter-spacing:2px}
+.avCard p{margin:0;font-size:14px}
+.avCard footer{font-size:12px;color:var(--muted)}
+.avCard footer b{color:var(--fg)}
+.avEmpty{grid-column:1/-1;border:1px dashed var(--line);border-radius:10px;padding:18px;color:var(--muted);text-align:center;font-size:14px}
 /* ---- topo (hero) ---- */
 .hero{display:block;padding:0;position:relative;overflow:hidden;border-bottom:1px solid var(--line);
   background:
@@ -247,6 +263,7 @@ body.enc-on{padding-bottom:20px}
 <div class="wrap tabs" role="tablist">
   <a class="tab" role="tab" href="#loja" id="tLoja">Pronta entrega</a>
   <a class="tab" role="tab" href="#encomenda" id="tEnc">Encomenda personalizada</a>
+  <a class="tab" role="tab" href="#avaliacoes" id="tAval">Avaliações</a>
 </div>
 
 <div id="vLoja">
@@ -309,6 +326,44 @@ body.enc-on{padding-bottom:20px}
     </div>
     <p class="toast" id="eToast"></p>
     <details class="encPrev"><summary>Ver a mensagem que será enviada</summary><pre id="eMsg"></pre></details>
+  </form>
+</section>
+<section class="wrap enc" id="vAval" hidden>
+  <div class="encHead">
+    <h2>Avaliações</h2>
+    <p>Comprou com a gente? Conta o que achou e manda uma foto da peça no seu cantinho. A sua avaliação ajuda muito quem está escolhendo.</p>
+  </div>
+  <div class="avList" id="avList"></div>
+  <form id="fAval" novalidate>
+    <fieldset>
+      <legend>Deixe sua avaliação</legend>
+      <div class="grid2">
+        <div class="f"><label for="aNome">Seu nome *</label><input id="aNome" type="text" autocomplete="name" placeholder="Ex.: Ana"></div>
+        <div class="f"><label for="aPeca">Qual peça você comprou?</label><input id="aPeca" type="text" list="aPecas" placeholder="Ex.: Porta Incenso Bruxo"><datalist id="aPecas"></datalist></div>
+      </div>
+      <div class="f"><span class="lbl">Sua nota *</span>
+        <div class="stars" id="aNota" role="radiogroup" aria-label="Nota de 1 a 5">
+          <label><input type="radio" name="nota" value="1"><span>★</span></label>
+          <label><input type="radio" name="nota" value="2"><span>★</span></label>
+          <label><input type="radio" name="nota" value="3"><span>★</span></label>
+          <label><input type="radio" name="nota" value="4"><span>★</span></label>
+          <label><input type="radio" name="nota" value="5" checked><span>★</span></label>
+        </div>
+      </div>
+      <div class="f"><label for="aTexto">Seu comentário *</label><textarea id="aTexto" rows="4" placeholder="Ex.: a peça chegou rapidinho e o acabamento é lindo, ficou perfeita na estante!"></textarea></div>
+      <div class="drop">
+        <input id="aFoto" type="file" accept="image/*">
+        <label for="aFoto" class="dropLbl"><b>Escolher foto da peça</b><span>Uma foto sua com a peça ou dela no lugar onde ficou</span></label>
+        <div class="prev" id="aPrev" hidden><img id="aPrevImg" alt="Prévia da foto escolhida"><button type="button" class="btn ghost sm" id="aFotoX">Trocar</button></div>
+      </div>
+      <p class="hint">A foto não vai junto no link do WhatsApp. Depois de enviar a mensagem, mande a foto na mesma conversa.</p>
+      <label class="chk"><input type="checkbox" id="aAut" checked> Autorizo a GROOVE LAB 3D a publicar minha avaliação e foto no site e no Instagram</label>
+    </fieldset>
+    <p class="err" id="aErr" role="alert"></p>
+    <div class="encActions">
+      <a class="btn zap" id="aZap" target="_blank" rel="noopener" aria-disabled="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.4-.7-2.8-1.1-4.6-4-4.8-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 .9c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></svg>
+        Enviar avaliação no WhatsApp</a>
+    </div>
   </form>
 </section>
 
@@ -767,10 +822,10 @@ E("eCopy").onclick=()=>{
   .catch(()=>{ E("eMsg").closest("details").open=true; const r=document.createRange(); r.selectNodeContents(E("eMsg")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); E("eToast").textContent="Texto selecionado. Copie e cole no WhatsApp."; });
 };
 function rota(){
-  const enc = location.hash==="#encomenda";
-  E("vLoja").hidden=enc; E("bar").hidden=enc; E("vEnc").hidden=!enc;
-  document.body.classList.toggle("enc-on",enc);
-  E("tLoja").setAttribute("aria-selected",String(!enc)); E("tEnc").setAttribute("aria-selected",String(enc));
+  const enc = location.hash==="#encomenda", av = location.hash==="#avaliacoes", loja=!enc&&!av;
+  E("vLoja").hidden=!loja; E("bar").hidden=!loja; E("vEnc").hidden=!enc; E("vAval").hidden=!av;
+  document.body.classList.toggle("enc-on",!loja);
+  E("tLoja").setAttribute("aria-selected",String(loja)); E("tEnc").setAttribute("aria-selected",String(enc)); E("tAval").setAttribute("aria-selected",String(av));
 }
 window.addEventListener("hashchange",()=>{ rota(); window.scrollTo(0,0); });
 
@@ -785,6 +840,53 @@ window.addEventListener("hashchange",()=>{ rota(); window.scrollTo(0,0); });
   E("xmasTrack").innerHTML=html+html.replace(/<button /g,'<button tabindex="-1" aria-hidden="true" ');
   E("xmasTrack").addEventListener("click",e=>{const b=e.target.closest(".xmasItem"); if(!b) return; e.stopPropagation(); filtro=b.dataset.x; chips(); lista(); setTimeout(()=>E("chips").scrollIntoView({behavior:"smooth",block:"start"}),20);});
 })();
+
+/* ===== Avaliações (recebidas pelo WhatsApp e publicadas aqui depois de aprovadas) ===== */
+const AVALIACOES = [
+  /* {nome:"Ana", peca:"Porta Incenso Bruxo", nota:5, texto:"...", foto:"data:image/..."} */
+];
+function avRender(){
+  const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  E("avList").innerHTML = AVALIACOES.length ? AVALIACOES.map(a=>`<figure class="avCard">${a.foto?`<img src="${a.foto}" alt="Foto de ${esc(a.nome)}" loading="lazy">`:""}<div class="st" aria-label="Nota ${a.nota} de 5">${"★".repeat(a.nota)}${"☆".repeat(5-a.nota)}</div><p>${esc(a.texto)}</p><footer><b>${esc(a.nome)}</b>${a.peca?` · ${esc(a.peca)}`:""}</footer></figure>`).join("")
+    : `<div class="avEmpty">Ainda não temos avaliações publicadas. Seja o primeiro a contar como ficou a sua peça! ⚡</div>`;
+}
+E("aPecas").innerHTML=[...new Set(PRODUTOS.filter(p=>!p.encomenda).map(p=>p.nome))].sort((a,b)=>a.localeCompare(b,"pt-BR")).map(n=>`<option value="${n.replace(/"/g,"&quot;")}">`).join("");
+function avNota(){ const r=document.querySelector('input[name="nota"]:checked'); return r?+r.value:0; }
+function avMsg(){
+  const n=avNota(), L=["Olá, GROOVE LAB 3D! Quero deixar minha avaliação ⭐",""];
+  L.push(`*Nome:* ${E("aNome").value.trim()}`);
+  if(E("aPeca").value.trim()) L.push(`*Peça:* ${E("aPeca").value.trim()}`);
+  L.push(`*Nota:* ${"⭐".repeat(n)} (${n}/5)`);
+  L.push(""); L.push(`*Comentário:* ${E("aTexto").value.trim()}`);
+  L.push(""); L.push(`*Autorizo publicar no site e Instagram:* ${E("aAut").checked?"Sim":"Não"}`);
+  if(E("aFoto").files && E("aFoto").files[0]) { L.push(""); L.push("Vou mandar a foto da peça aqui na conversa."); }
+  return L.join("\n");
+}
+function avOk(){ return E("aNome").value.trim() && E("aTexto").value.trim() && avNota()>0; }
+function avAtualizar(){
+  E("aNota").className="stars v"+avNota();
+  const z=E("aZap");
+  if(avOk()){ z.href=`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(avMsg())}`; z.setAttribute("aria-disabled","false"); E("aErr").textContent=""; }
+  else { z.removeAttribute("href"); z.setAttribute("aria-disabled","true"); }
+}
+E("fAval").addEventListener("input",e=>{ e.target.classList.remove("bad"); avAtualizar(); });
+E("fAval").addEventListener("change",avAtualizar);
+E("fAval").addEventListener("submit",e=>e.preventDefault());
+E("aZap").addEventListener("click",e=>{
+  if(avOk()) return;
+  e.preventDefault();
+  const falta=[];
+  [["aNome","nome"],["aTexto","comentário"]].forEach(([id,n])=>{ const el=E(id); if(!el.value.trim()){el.classList.add("bad");falta.push(n);} });
+  E("aErr").textContent=`Preencha: ${falta.join(", ")}.`;
+});
+E("aFoto").addEventListener("change",()=>{
+  const fl=E("aFoto").files[0];
+  if(!fl){ E("aPrev").hidden=true; avAtualizar(); return; }
+  const r=new FileReader(); r.onload=()=>{ E("aPrevImg").src=r.result; E("aPrev").hidden=false; }; r.readAsDataURL(fl);
+  avAtualizar();
+});
+E("aFotoX").onclick=()=>E("aFoto").click();
+avRender(); avAtualizar();
 rota(); encAtualizar(); paginaPix();
 </script>
 
