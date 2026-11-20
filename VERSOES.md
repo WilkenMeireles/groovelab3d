@@ -9,6 +9,6 @@ const TEMA="oficial"; // versão oficial: azul da marca, sem duende
 
 Produtos, preços, avaliações e Pix são os mesmos nas duas versões. Qualquer alteração vale para ambas.
 
-Marcos no Git:
-- `versao-oficial`: site oficial antes das mudanças de Natal
-- `versao-natalina`: primeira publicação da versão natalina
+Histórico no Git:
+- commit `0526cb0`: último site oficial antes das mudanças de Natal
+- commit `ccaa669`: primeira publicação da versão natalina
