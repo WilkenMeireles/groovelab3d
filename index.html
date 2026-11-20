@@ -141,6 +141,10 @@ body.enc-on{padding-bottom:20px}
 .avCard p{margin:0;font-size:14px}
 .avCard footer{font-size:12px;color:var(--muted)}
 .avCard footer b{color:var(--fg)}
+.avCard footer{display:flex;align-items:center;gap:10px}
+.avCard footer small{display:block;font-size:12px}
+.avAv{flex:none;width:38px;height:38px;border-radius:50%;overflow:hidden;background:#2b303a;box-shadow:0 0 0 2px var(--line)}
+.avAv img,.avAv svg{width:100%;height:100%;object-fit:cover;display:block;border-radius:0;aspect-ratio:auto;cursor:default}
 .avEmpty{grid-column:1/-1;border:1px dashed var(--line);border-radius:10px;padding:18px;color:var(--muted);text-align:center;font-size:14px}
 /* ---- topo (hero) ---- */
 .hero{display:block;padding:0;position:relative;overflow:hidden;border-bottom:1px solid var(--line);
@@ -901,14 +905,17 @@ window.addEventListener("hashchange",()=>{ rota(); window.scrollTo(0,0); });
 
 /* ===== Avaliações (recebidas pelo WhatsApp e publicadas aqui depois de aprovadas) ===== */
 const AVALIACOES = [
-  /* {nome:"Ana", peca:"Porta Incenso Bruxo", nota:5, texto:"...", foto:"data:image/..."} */
-  {nome:"Nicolly A.", peca:"Porta Lata Monster", nota:5, texto:"Peça perfeita, chegou super rápido e qualidade ótima!"},
-  {nome:"Rute M.", peca:"Árvore de Natal Estrelada", nota:5, texto:"Minhas peças são maravilhosas, eu amei e logo logo vou comprar mais. O que eu mais gostei foi o material que é de perfeita qualidade e trabalho excelente."},
-  {nome:"Ketalli M.", peca:"Árvore de Natal Estrelada", nota:5, texto:"Perfeita"},
+  /* {nome:"Ana", sexo:"f" ou "m", perfil:"data:image/..." (foto de perfil, opcional), peca:"Porta Incenso Bruxo", nota:5, texto:"...", foto:"data:image/..." (foto da peça, opcional)} */
+  {nome:"Nicolly A.", sexo:"f", peca:"Porta Lata Monster", nota:5, texto:"Peça perfeita, chegou super rápido e qualidade ótima!"},
+  {nome:"Rute M.", sexo:"f", peca:"Árvore de Natal Estrelada", nota:5, texto:"Minhas peças são maravilhosas, eu amei e logo logo vou comprar mais. O que eu mais gostei foi o material que é de perfeita qualidade e trabalho excelente."},
+  {nome:"Ketalli M.", sexo:"f", peca:"Árvore de Natal Estrelada", nota:5, texto:"Perfeita"},
 ];
+const AV_SOMBRA={
+  f:'<svg viewBox="0 0 36 36" aria-hidden="true"><path fill="#5d6576" d="M18 4.5c-6.5 0-10.5 4.6-10.5 11 0 4.5-1.2 8.6-3 12.5 4 1.6 9 2.3 13.5 2.3s9.5-.7 13.5-2.3c-1.8-3.9-3-8-3-12.5 0-6.4-4-11-10.5-11z"/><ellipse cx="18" cy="15.5" rx="5.6" ry="6.4" fill="#9aa3b3"/><path fill="#5d6576" d="M12.2 14.5c1.2-4 3.4-5.6 6.3-5.6 2.4 0 4.6 1.6 5.4 5.2-2.6-.4-5.6-1.8-7.4-3.6-1 1.8-2.4 3.2-4.3 4z"/><path fill="#9aa3b3" d="M8 36c.6-5.6 4.4-9 10-9s9.4 3.4 10 9z"/></svg>',
+  m:'<svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="14.5" r="6.6" fill="#9aa3b3"/><path fill="#5d6576" d="M11.2 13.5c-.4-5 2.6-8 6.8-8 4.3 0 7.3 3 6.8 8-1.4-2.2-3.6-3.2-6.8-3.2s-5.4 1-6.8 3.2z"/><path fill="#9aa3b3" d="M5 36c.4-7 5.6-10.5 13-10.5s12.6 3.5 13 10.5z"/></svg>'};
 function avRender(){
   const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-  E("avList").innerHTML = AVALIACOES.length ? AVALIACOES.map(a=>`<figure class="avCard">${a.foto?`<img src="${a.foto}" alt="Foto de ${esc(a.nome)}" loading="lazy">`:""}<div class="st" aria-label="Nota ${a.nota} de 5">${"★".repeat(a.nota)}${"☆".repeat(5-a.nota)}</div><p>${esc(a.texto)}</p><footer><b>${esc(a.nome)}</b>${a.peca?` · ${esc(a.peca)}`:""}</footer></figure>`).join("")
+  E("avList").innerHTML = AVALIACOES.length ? AVALIACOES.map(a=>`<figure class="avCard">${a.foto?`<img src="${a.foto}" alt="Foto de ${esc(a.nome)}" loading="lazy">`:""}<div class="st" aria-label="Nota ${a.nota} de 5">${"★".repeat(a.nota)}${"☆".repeat(5-a.nota)}</div><p>${esc(a.texto)}</p><footer><span class="avAv">${a.perfil?`<img src="${a.perfil}" alt="">`:AV_SOMBRA[a.sexo==="m"?"m":"f"]}</span><span><b>${esc(a.nome)}</b>${a.peca?`<small>${esc(a.peca)}</small>`:""}</span></footer></figure>`).join("")
     : `<div class="avEmpty">Ainda não temos avaliações publicadas. Seja o primeiro a contar como ficou a sua peça! ⚡</div>`;
 }
 E("aPecas").innerHTML=[...new Set(PRODUTOS.filter(p=>!p.encomenda).map(p=>p.nome))].sort((a,b)=>a.localeCompare(b,"pt-BR")).map(n=>`<option value="${n.replace(/"/g,"&quot;")}">`).join("");
