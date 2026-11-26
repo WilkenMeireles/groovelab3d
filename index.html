@@ -19,7 +19,7 @@
 <title>Groove Lab 3D</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Manrope:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Syne:wght@800&family=Manrope:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap">
 <style>
 /* Layout: vitrine escura com filtros fixos no topo, grade de produtos e sacola fixa embaixo que vira pedido no WhatsApp */
 :root{
@@ -209,6 +209,30 @@ body.enc-on{padding-bottom:20px}
 .footIn{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:22px}
 .footBrand{font:700 14px var(--display);letter-spacing:.06em;color:var(--muted)}
 .footBrand b{color:var(--blue)}
+/* Loop da família Groove: GROOVE fixo, LAB 3D ↔ CUE, ícone troca junto (mesmo do rodapé do groovecue.com.br) */
+.gl{display:flex;flex-direction:column;gap:6px}
+.gl-loop{display:flex;align-items:center;gap:.34em;font-size:22px;color:#E8EAEE;text-decoration:none}
+@media (min-width:640px){.gl-loop{font-size:26px}}
+.gl-ico{position:relative;width:1.25em;height:1.25em;flex:none}
+.gl-ico svg{position:absolute;inset:0;width:100%;height:100%}
+.gl-word{font:800 1em/1em Syne,var(--display);letter-spacing:-.02em;display:flex;gap:.28em;font-variant-numeric:lining-nums}
+.gl-slot{display:inline-block;height:1em;overflow:hidden;color:#2F6BFF}
+.gl-roll{display:flex;flex-direction:column;animation:gl-roll 6s cubic-bezier(.7,0,.2,1) infinite}
+.gl-roll span{height:1em;line-height:1em;white-space:nowrap}
+.gl-a{animation:gl-a 6s cubic-bezier(.7,0,.2,1) infinite}
+.gl-b{animation:gl-b 6s cubic-bezier(.7,0,.2,1) infinite;opacity:0}
+.gl-meta{font-size:12px;color:var(--muted)}
+.gl-meta .gl-fam{font:500 11px var(--mono);letter-spacing:.14em}
+.gl-sub{display:inline-block;height:1.4em;overflow:hidden;vertical-align:top}
+.gl-sub>span{display:flex;flex-direction:column;animation:gl-sub 6s cubic-bezier(.7,0,.2,1) infinite}
+.gl-sub>span>span{height:1.4em;line-height:1.4em;white-space:nowrap}
+.gl-meta a{color:#A9C4FF;font-weight:700;text-decoration:none;white-space:nowrap}
+.gl-meta a:hover{color:#fff}
+@keyframes gl-roll{0%,42%{transform:translateY(0)}50%,92%{transform:translateY(-1em)}100%{transform:translateY(-2em)}}
+@keyframes gl-sub{0%,42%{transform:translateY(0)}50%,92%{transform:translateY(-1.4em)}100%{transform:translateY(-2.8em)}}
+@keyframes gl-a{0%,42%{transform:scale(1) rotate(0);opacity:1}48%,94%{transform:scale(.3) rotate(-120deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes gl-b{0%,44%{transform:scale(.3) rotate(120deg);opacity:0}50%,92%{transform:scale(1) rotate(0);opacity:1}98%,100%{transform:scale(.3) rotate(120deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){.gl-roll,.gl-sub>span,.gl-a,.gl-b{animation:none}}
 .igLink{display:inline-flex;align-items:center;gap:8px;color:var(--fg);text-decoration:none;font-weight:700;border:1px solid var(--line);border-radius:999px;padding:8px 14px}
 .igLink:hover{border-color:var(--blue)}
 .igLink:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
@@ -418,7 +442,17 @@ if(TEMA==="natal") document.documentElement.classList.add("natal");
 
 <footer class="foot">
   <div class="wrap footIn">
-    <span class="footBrand">GROOVE LAB <b>3D</b></span>
+    <div class="gl">
+      <a class="gl-loop" href="https://www.groovecue.com.br" target="_blank" rel="noopener" aria-label="Groove Lab 3D e Groove Cue, marcas da família Groove. Conheça o Groove Cue">
+        <span class="gl-ico" aria-hidden="true">
+          <svg class="gl-a" viewBox="0 0 200 200"><defs><mask id="gl-k" maskUnits="userSpaceOnUse" x="-20" y="-20" width="240" height="240"><rect x="-20" y="-20" width="240" height="240" fill="#fff"/><path d="M142 10 L58 112 L100 112 L58 192 L146 84 L104 84 Z" fill="#000" stroke="#000" stroke-width="26" stroke-linejoin="round"/></mask></defs><circle cx="100" cy="100" r="70" fill="none" stroke="#E8EAEE" stroke-width="12" mask="url(#gl-k)"/><path d="M142 10 L58 112 L100 112 L58 192 L146 84 L104 84 Z" fill="none" stroke="#E8EAEE" stroke-width="10" stroke-linejoin="round"/><circle cx="102" cy="98" r="9" fill="#2F6BFF"/></svg>
+          <svg class="gl-b" viewBox="-30 -30 260 260"><path d="M157.3 59.8 A70 70 0 1 0 157.3 140.2" fill="none" stroke="#E8EAEE" stroke-width="26" stroke-linecap="round"/><line x1="128" y1="100" x2="170" y2="100" stroke="#E8EAEE" stroke-width="26" stroke-linecap="round"/><circle cx="100" cy="100" r="14" fill="#2F6BFF"/></svg>
+        </span>
+        <span class="gl-word" aria-hidden="true"><span>GROOVE</span><span class="gl-slot"><span class="gl-roll"><span>LAB 3D</span><span>CUE</span><span>LAB 3D</span></span></span></span>
+      </a>
+      <div class="gl-meta"><span class="gl-fam">● FAMÍLIA GROOVE</span> · <span class="gl-sub" aria-hidden="true"><span><span>impressão 3D sob medida</span><span>agendamento online</span><span>impressão 3D sob medida</span></span></span></div>
+      <div class="gl-meta">Conheça também o <a href="https://www.groovecue.com.br" target="_blank" rel="noopener">Groove Cue →</a></div>
+    </div>
     <a class="igLink" href="https://www.instagram.com/groovelab3d/" target="_blank" rel="noopener"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg><span>@groovelab3d</span></a>
   </div>
 </footer>
